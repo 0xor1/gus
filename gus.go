@@ -29,8 +29,8 @@ func NewGaeStore(kind string, ctxFactory ContextFactory, idf sus.IdFactory, vf s
 			vs[i] = vf()
 			ks[i] = getKey(tranCtx, ids[i])
 		}
-		log.Println(vs)
-		log.Println(ks)
+		log.Println(vs[0])
+		log.Println(ks[0])
 		err = nds.GetMulti(tranCtx, ks, vs)
 		log.Println(err)
 		return
@@ -42,8 +42,8 @@ func NewGaeStore(kind string, ctxFactory ContextFactory, idf sus.IdFactory, vf s
 		for i := 0; i < count; i++ {
 			ks[i] = getKey(tranCtx, ids[i])
 		}
-		log.Println(vs)
-		log.Println(ks)
+		log.Println(vs[0])
+		log.Println(ks[0])
 		_, err = nds.PutMulti(tranCtx, ks, vs)
 		log.Println(err)
 		return
@@ -59,7 +59,7 @@ func NewGaeStore(kind string, ctxFactory ContextFactory, idf sus.IdFactory, vf s
 	}
 
 	isNonExtantError := func(err error) bool {
-		return err == datastore.ErrNoSuchEntity
+		return err.Error() == datastore.ErrNoSuchEntity.Error()
 	}
 
 	rit := func(tran sus.Transaction) error {

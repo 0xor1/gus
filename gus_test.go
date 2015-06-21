@@ -25,9 +25,24 @@ func Test_GaeStore(t *testing.T){
 	assert.Equal(t, 0, foo.GetVersion(), `Version should still be 0`)
 	assert.Nil(t, err, `err should be nil`)
 
+	err = fgs.Update(id, foo)
+
+	assert.Equal(t, 1, foo.GetVersion(), `Version should be incremented to 1`)
+	assert.Nil(t, err, `err should be nil`)
+
+	foo, err = fgs.Read(id)
+
+	assert.Equal(t, 1, foo.GetVersion(), `Version should still be 1`)
+	assert.Nil(t, err, `err should be nil`)
+
 	err = fgs.Delete(id)
 
 	assert.Nil(t, err, `err should be nil`)
+
+	foo, err = fgs.Read(id)
+
+	assert.Equal(t, 0, foo.GetVersion(), `Version should be 0 as initialised`)
+	assert.NotNil(t, err, `err should not be nil`)
 }
 
 type foo struct{
