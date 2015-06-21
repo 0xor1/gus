@@ -1,6 +1,7 @@
 package gus
 
 import(
+	`log`
 	`sync`
 	`github.com/0xor1/sus`
 	`github.com/qedus/nds`
@@ -28,7 +29,10 @@ func NewGaeStore(kind string, ctxFactory ContextFactory, idf sus.IdFactory, vf s
 			vs[i] = vf()
 			ks[i] = getKey(tranCtx, ids[i])
 		}
+		log.Println(vs)
+		log.Println(ks)
 		err = nds.GetMulti(tranCtx, ks, vs)
+		log.Println(err)
 		return
 	}
 
@@ -38,7 +42,10 @@ func NewGaeStore(kind string, ctxFactory ContextFactory, idf sus.IdFactory, vf s
 		for i := 0; i < count; i++ {
 			ks[i] = getKey(tranCtx, ids[i])
 		}
+		log.Println(vs)
+		log.Println(ks)
 		_, err = nds.PutMulti(tranCtx, ks, vs)
+		log.Println(err)
 		return
 	}
 

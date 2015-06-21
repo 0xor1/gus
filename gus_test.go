@@ -4,23 +4,46 @@ import(
 	`fmt`
 	`testing`
 	`net/http`
-	`appengine/aetest`
 	`github.com/0xor1/sus`
 	`golang.org/x/net/context`
 	`google.golang.org/appengine`
 	`github.com/stretchr/testify/assert`
+	`code.google.com/p/appengine-go/appengine/aetest`
 )
 
-func Test_GaeStore_Create(t *testing.T){
+func Test_GaeStore(t *testing.T){
 	fgs := newFooGaeStore()
+
 	id, foo, err := fgs.Create()
+
 	assert.Equal(t, `1`, id, `id should be valid`)
 	assert.Equal(t, 0, foo.GetVersion(), `Version should be initialised to 0`)
+	assert.Nil(t, err, `err should be nil`)
+
+	foo, err = fgs.Read(id)
+
+	assert.Equal(t, 0, foo.GetVersion(), `Version should still be 0`)
+	assert.Nil(t, err, `err should be nil`)
+
+	err = fgs.Delete(id)
+
 	assert.Nil(t, err, `err should be nil`)
 }
 
 type foo struct{
-	sus.Version
+	Version int	`datastore:",noindex"`
+}
+
+func (f *foo) GetVersion() int {
+	return f.Version
+}
+
+func (f *foo) IncrementVersion() {
+	f.Version++
+}
+
+func (f *foo) DecrementVersion() {
+	f.Version--
 }
 
 func newFooGaeStore() *fooGaeStore {
@@ -34,7 +57,8 @@ func newFooGaeStore() *fooGaeStore {
 		return fmt.Sprintf(`%d`, idSrc)
 	}
 	vf := func() sus.Version {
-		return &foo{sus.NewVersion()}
+		return &foo{}
+
 	}
 	return &fooGaeStore{
 		inner: NewGaeStore(`foo`, ctxFactory, idf, vf),
