@@ -8,9 +8,11 @@ import(
 	`google.golang.org/appengine/datastore`
 )
 
+type ContextFactory func() context.Context
+
 // Creates and configures a store that stores entities in Google AppEngines memcache and datastore.
 // github.com/qedus/nds is used for strongly consistent automatic caching.
-func NewGaeStore(kind string, idf sus.IdFactory, vf sus.VersionFactory) sus.Store {
+func NewGaeStore(kind string, ctxFactory ContextFactory, idf sus.IdFactory, vf sus.VersionFactory) sus.Store {
 	var tranCtx context.Context
 	var mtx sync.Mutex
 
@@ -54,7 +56,7 @@ func NewGaeStore(kind string, idf sus.IdFactory, vf sus.VersionFactory) sus.Stor
 	}
 
 	rit := func(tran sus.Transaction) error {
-		return nds.RunInTransaction(context.Background(), func(ctx context.Context)error{
+		return nds.RunInTransaction(ctxFactory(), func(ctx context.Context)error{
 			//this mutex might be completely unnecessary, it might only matter that transactions have a context, not that they have a unique context
 			mtx.Lock()
 			defer func(){

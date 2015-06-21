@@ -3,7 +3,11 @@ package gus
 import(
 	`fmt`
 	`testing`
+	`net/http`
+	`appengine/aetest`
 	`github.com/0xor1/sus`
+	`golang.org/x/net/context`
+	`google.golang.org/appengine`
 	`github.com/stretchr/testify/assert`
 )
 
@@ -20,6 +24,10 @@ type foo struct{
 }
 
 func newFooGaeStore() *fooGaeStore {
+	ctxFactory := func()context.Context{
+		ctx, _ := aetest.NewContext(nil)
+		return appengine.NewContext(ctx.Request().(*http.Request))
+	}
 	idSrc := 0
 	idf := func() string {
 		idSrc++
@@ -29,7 +37,7 @@ func newFooGaeStore() *fooGaeStore {
 		return &foo{sus.NewVersion()}
 	}
 	return &fooGaeStore{
-		inner: NewGaeStore(`foo`, idf, vf),
+		inner: NewGaeStore(`foo`, ctxFactory, idf, vf),
 	}
 }
 
