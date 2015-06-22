@@ -1,9 +1,3 @@
---- FAIL: Test_GaeStore (4.58s)
-	assertions.go:156:                         	Location:	gus_test.go:26
-			Error:		Expected nil, but got: appengine.MultiError{(*errors.errorString)(0xc082090330)}
-			Messages:	err should be nil
-		
-FAIL
+PASS
 coverage: 100.0% of statements
-exit status 1
-FAIL	github.com/0xor1/gus	4.642s
+ok  	github.com/0xor1/gus	1.646s

@@ -5,10 +5,9 @@ import(
 	`testing`
 	`net/http`
 	`github.com/0xor1/sus`
-	`golang.org/x/net/context`
 	`google.golang.org/appengine`
 	`github.com/stretchr/testify/assert`
-	`code.google.com/p/appengine-go/appengine/aetest`
+	`appengine/aetest`
 )
 
 func Test_GaeStore(t *testing.T){
@@ -62,10 +61,8 @@ func (f *foo) DecrementVersion() {
 }
 
 func newFooGaeStore() *fooGaeStore {
-	ctxFactory := func()context.Context{
-		ctx, _ := aetest.NewContext(nil)
-		return appengine.NewContext(ctx.Request().(*http.Request))
-	}
+	c, _ := aetest.NewContext(nil)
+	ctx := appengine.NewContext(c.Request().(*http.Request))
 	idSrc := 0
 	idf := func() string {
 		idSrc++
@@ -76,7 +73,7 @@ func newFooGaeStore() *fooGaeStore {
 
 	}
 	return &fooGaeStore{
-		inner: NewGaeStore(`foo`, ctxFactory, idf, vf),
+		inner: NewGaeStore(`foo`, ctx, idf, vf),
 	}
 }
 

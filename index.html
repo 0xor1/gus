@@ -71,22 +71,15 @@
 		<pre class="file" id="file0" >package gus
 
 import(
-        `log`
-        `sync`
         `github.com/0xor1/sus`
         `github.com/qedus/nds`
         `golang.org/x/net/context`
         `google.golang.org/appengine/datastore`
 )
 
-type ContextFactory func() context.Context
-
 // Creates and configures a store that stores entities in Google AppEngines memcache and datastore.
 // github.com/qedus/nds is used for strongly consistent automatic caching.
-func NewGaeStore(kind string, ctxFactory ContextFactory, idf sus.IdFactory, vf sus.VersionFactory) sus.Store <span class="cov8" title="1">{
-        var tranCtx context.Context
-        var mtx sync.Mutex
-
+func NewGaeStore(kind string, ctx context.Context, idf sus.IdFactory, vf sus.VersionFactory) sus.Store <span class="cov8" title="1">{
         getKey := func(ctx context.Context, id string) *datastore.Key </span><span class="cov8" title="1">{
                 return datastore.NewKey(ctx, kind, id, 0, nil)
         }</span>
@@ -97,12 +90,9 @@ func NewGaeStore(kind string, ctxFactory ContextFactory, idf sus.IdFactory, vf s
                 ks := make([]*datastore.Key, count, count)
                 for i := 0; i &lt; count; i++ </span><span class="cov8" title="1">{
                         vs[i] = vf()
-                        ks[i] = getKey(tranCtx, ids[i])
+                        ks[i] = getKey(ctx, ids[i])
                 }</span>
-                <span class="cov8" title="1">log.Println(vs)
-                log.Println(ks)
-                err = nds.GetMulti(tranCtx, ks, vs)
-                log.Println(err)
+                <span class="cov8" title="1">err = nds.GetMulti(ctx, ks, vs)
                 return</span>
         }
 
@@ -110,12 +100,9 @@ func NewGaeStore(kind string, ctxFactory ContextFactory, idf sus.IdFactory, vf s
                 count := len(ids)
                 ks := make([]*datastore.Key, count, count)
                 for i := 0; i &lt; count; i++ </span><span class="cov8" title="1">{
-                        ks[i] = getKey(tranCtx, ids[i])
+                        ks[i] = getKey(ctx, ids[i])
                 }</span>
-                <span class="cov8" title="1">log.Println(vs)
-                log.Println(ks)
-                _, err = nds.PutMulti(tranCtx, ks, vs)
-                log.Println(err)
+                <span class="cov8" title="1">_, err = nds.PutMulti(ctx, ks, vs)
                 return</span>
         }
 
@@ -123,26 +110,19 @@ func NewGaeStore(kind string, ctxFactory ContextFactory, idf sus.IdFactory, vf s
                 count := len(ids)
                 ks := make([]*datastore.Key, count, count)
                 for i := 0; i &lt; count; i++ </span><span class="cov8" title="1">{
-                        ks[i] = getKey(tranCtx, ids[i])
+                        ks[i] = getKey(ctx, ids[i])
                 }</span>
-                <span class="cov8" title="1">return nds.DeleteMulti(tranCtx, ks)</span>
+                <span class="cov8" title="1">return nds.DeleteMulti(ctx, ks)</span>
         }
 
         <span class="cov8" title="1">isNonExtantError := func(err error) bool </span><span class="cov8" title="1">{
-                return err == datastore.ErrNoSuchEntity
+                return err.Error() == datastore.ErrNoSuchEntity.Error()
         }</span>
 
         <span class="cov8" title="1">rit := func(tran sus.Transaction) error </span><span class="cov8" title="1">{
-                return nds.RunInTransaction(ctxFactory(), func(ctx context.Context)error</span><span class="cov8" title="1">{
-                        //this mutex might be completely unnecessary, it might only matter that transactions have a context, not that they have a unique context
-                        mtx.Lock()
-                        defer func()</span><span class="cov8" title="1">{
-                                tranCtx = nil
-                                mtx.Unlock()
-                        }</span>()
-                        <span class="cov8" title="1">tranCtx = ctx
-                        return tran()</span>
-                }, &amp;datastore.TransactionOptions{XG:true})
+                return nds.RunInTransaction(ctx, func(ctx context.Context)error</span><span class="cov8" title="1">{
+                        return tran()
+                }</span>, &amp;datastore.TransactionOptions{XG:true})
         }
 
         <span class="cov8" title="1">return sus.NewStore(getMulti, putMulti, delMulti, idf, vf, isNonExtantError,rit)</span>
