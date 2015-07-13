@@ -4,7 +4,7 @@
 	"Deps": [
 		{
 			"ImportPath": "github.com/0xor1/sus",
-			"Rev": "b5a1355db4078c406bb880b17e361ef76e8130b1"
+			"Rev": "c69ca81881085f33cac368aeca68ed570d549708"
 		},
 		{
 			"ImportPath": "github.com/golang/protobuf/proto",
